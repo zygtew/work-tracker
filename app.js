@@ -6,9 +6,10 @@ const currentDate = document.getElementById('current-date');
 const currentTime = document.getElementById('current-time');
 const statusLabel = document.getElementById('status-label');
 const statusTime = document.getElementById('status-time');
-const clockBtn = document.getElementById('clock-btn');
-const clockBtnText = document.getElementById('clock-btn-text');
-const clockBtnSub = document.getElementById('clock-btn-sub');
+const btnClockin = document.getElementById('btn-clockin');
+const btnClockout = document.getElementById('btn-clockout');
+const clockinTime = document.getElementById('clockin-time');
+const clockoutTime = document.getElementById('clockout-time');
 const durationValue = document.getElementById('duration-value');
 const statToday = document.getElementById('stat-today');
 const statWeek = document.getElementById('stat-week');
@@ -20,7 +21,6 @@ const pages = document.querySelectorAll('.page');
 // ============ 状态 ============
 let records = loadRecords();
 let todayRecord = getTodayRecord();
-let clockedIn = todayRecord && !todayRecord.clockOut;
 let timerInterval = null;
 
 // ============ 初始化 ============
@@ -32,8 +32,9 @@ function init() {
 }
 
 function setupEventListeners() {
-  clockBtn.addEventListener('click', handleClock);
-  
+  btnClockin.addEventListener('click', handleClockIn);
+  btnClockout.addEventListener('click', handleClockOut);
+
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const page = tab.dataset.page;
@@ -87,32 +88,64 @@ function getDateStr(date) {
 function ensureTodayRecord() {
   let record = getTodayRecord();
   if (!record) {
-    record = { date: getDateStr(new Date()), clockIn: null, clockOut: null, duration: 0 };
+    record = {
+      date: getDateStr(new Date()),
+      clockIn: null,
+      clockOuts: [],
+      duration: 0
+    };
     records.push(record);
   }
+  // 兼容旧数据格式
+  if (record.clockOut && !record.clockOuts) {
+    record.clockOuts = [record.clockOut];
+    delete record.clockOut;
+  }
+  if (!record.clockOuts) record.clockOuts = [];
   return record;
 }
 
+function getLatestClockOut() {
+  if (!todayRecord || !todayRecord.clockOuts || todayRecord.clockOuts.length === 0) return null;
+  return todayRecord.clockOuts[todayRecord.clockOuts.length - 1];
+}
+
 // ============ 打卡操作 ============
-function handleClock() {
+function handleClockIn() {
   const now = new Date();
   const timeStr = formatTime(now);
 
-  if (!clockedIn) {
-    // 上班打卡
-    todayRecord = ensureTodayRecord();
-    todayRecord.clockIn = timeStr;
-    clockedIn = true;
-    startTimer();
-  } else {
-    // 下班打卡
-    if (todayRecord) {
-      todayRecord.clockOut = timeStr;
-      todayRecord.duration = calcDuration(todayRecord.clockIn, timeStr);
-      clockedIn = false;
-      stopTimer();
-    }
+  todayRecord = ensureTodayRecord();
+
+  // 如果已经有上班记录，提示
+  if (todayRecord.clockIn) {
+    statusTime.textContent = `今日已上班: ${todayRecord.clockIn}`;
+    return;
   }
+
+  todayRecord.clockIn = timeStr;
+  saveRecords();
+  updateUI();
+  startTimer();
+}
+
+function handleClockOut() {
+  const now = new Date();
+  const timeStr = formatTime(now);
+
+  todayRecord = ensureTodayRecord();
+
+  if (!todayRecord.clockIn) {
+    statusTime.textContent = '请先上班打卡';
+    return;
+  }
+
+  // 记录多次下班打卡
+  todayRecord.clockOuts.push(timeStr);
+
+  // 工时 = 最晚下班时间 - 上班时间
+  const latestOut = getLatestClockOut();
+  todayRecord.duration = calcDuration(todayRecord.clockIn, latestOut);
 
   saveRecords();
   updateUI();
@@ -157,7 +190,16 @@ function updateDuration() {
     durationValue.textContent = '00:00:00';
     return;
   }
-  
+
+  // 如果已下班，显示最终工时
+  if (todayRecord.clockOuts && todayRecord.clockOuts.length > 0) {
+    const latestOut = getLatestClockOut();
+    const elapsed = calcDuration(todayRecord.clockIn, latestOut);
+    durationValue.textContent = formatDuration(Math.max(0, elapsed));
+    return;
+  }
+
+  // 工作中，实时更新
   const now = new Date();
   const elapsed = calcDuration(todayRecord.clockIn, formatTime(now));
   durationValue.textContent = formatDuration(Math.max(0, elapsed));
@@ -165,28 +207,59 @@ function updateDuration() {
 
 // ============ UI 更新 ============
 function updateUI() {
-  if (clockedIn) {
-    clockBtn.classList.add('clocked-in');
-    clockBtnText.textContent = '下班打卡';
-    clockBtnSub.textContent = todayRecord ? `上班时间 ${todayRecord.clockIn}` : '';
-    statusLabel.textContent = '已上班';
-    statusTime.textContent = todayRecord ? `打卡时间: ${todayRecord.clockIn}` : '';
-    startTimer();
+  todayRecord = ensureTodayRecord();
+  const hasClockIn = !!todayRecord.clockIn;
+  const hasClockOut = todayRecord.clockOuts && todayRecord.clockOuts.length > 0;
+
+  // 上班按钮状态
+  if (hasClockIn) {
+    btnClockin.disabled = true;
+    btnClockin.classList.add('done');
+    clockinTime.textContent = todayRecord.clockIn;
   } else {
-    clockBtn.classList.remove('clocked-in');
-    clockBtnText.textContent = '上班打卡';
-    clockBtnSub.textContent = todayRecord ? '今日已打卡' : '';
-    statusLabel.textContent = todayRecord ? '今日已完成' : '未打卡';
-    statusTime.textContent = todayRecord && todayRecord.clockOut 
-      ? `下班时间: ${todayRecord.clockOut}` 
-      : todayRecord ? `上班时间: ${todayRecord.clockIn}` : '';
+    btnClockin.disabled = false;
+    btnClockin.classList.remove('done');
+    clockinTime.textContent = '';
+  }
+
+  // 下班按钮状态
+  if (hasClockIn && !hasClockOut) {
+    btnClockout.disabled = false;
+    btnClockout.classList.remove('done');
+    clockoutTime.textContent = '';
+    startTimer();
+  } else if (hasClockIn && hasClockOut) {
+    btnClockout.disabled = false;
+    btnClockout.classList.remove('done');
+    clockoutTime.textContent = `最近: ${getLatestClockOut()}`;
     stopTimer();
-    
-    if (todayRecord) {
-      durationValue.textContent = formatDuration(todayRecord.duration || 0);
-    } else {
-      durationValue.textContent = '00:00:00';
-    }
+    updateDuration();
+  } else {
+    btnClockout.disabled = true;
+    btnClockout.classList.remove('done');
+    clockoutTime.textContent = '';
+    stopTimer();
+  }
+
+  // 状态卡片
+  if (!hasClockIn) {
+    statusLabel.textContent = '未打卡';
+    statusTime.textContent = '请先上班打卡';
+  } else if (!hasClockOut) {
+    statusLabel.textContent = '已上班';
+    statusTime.textContent = `上班时间: ${todayRecord.clockIn}`;
+  } else {
+    statusLabel.textContent = '今日已完成';
+    statusTime.textContent = `上班 ${todayRecord.clockIn} / 下班 ${getLatestClockOut()}`;
+  }
+
+  // 工时显示
+  if (hasClockIn && hasClockOut) {
+    durationValue.textContent = formatDuration(todayRecord.duration || 0);
+  } else if (hasClockIn) {
+    updateDuration();
+  } else {
+    durationValue.textContent = '00:00:00';
   }
 }
 
@@ -231,7 +304,7 @@ function getMonthStart(date) {
 
 function updateHistoryList() {
   const sorted = [...records].filter(r => r.clockIn).sort((a, b) => b.date.localeCompare(a.date));
-  
+
   if (sorted.length === 0) {
     historyList.innerHTML = '<div class="empty-state">暂无打卡记录</div>';
     return;
@@ -240,11 +313,14 @@ function updateHistoryList() {
   historyList.innerHTML = sorted.slice(0, 30).map(r => {
     const d = new Date(r.date);
     const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const clockOuts = r.clockOuts || (r.clockOut ? [r.clockOut] : []);
+    const latestOut = clockOuts.length > 0 ? clockOuts[clockOuts.length - 1] : null;
+    const outDisplay = latestOut ? `→ ${latestOut}` : '进行中';
     return `
       <div class="history-item">
         <div>
           <div class="history-date">${r.date} ${weekDays[d.getDay()]}</div>
-          <div class="history-times">${r.clockIn} - ${r.clockOut || '进行中'}</div>
+          <div class="history-times">${r.clockIn} ${outDisplay}</div>
         </div>
         <div class="history-duration">${formatDurationShort(r.duration || 0)}</div>
       </div>

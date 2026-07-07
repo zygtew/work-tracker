@@ -27,12 +27,20 @@
           <div class="status-time" id="status-time"></div>
         </div>
 
-        <button class="clock-btn" id="clock-btn">
-          <span class="clock-btn-text" id="clock-btn-text">上班打卡</span>
-          <span class="clock-btn-sub" id="clock-btn-sub"></span>
-        </button>
+        <div class="clock-buttons">
+          <button class="clock-btn clock-in" id="btn-clockin">
+            <span class="clock-btn-icon">▶</span>
+            <span class="clock-btn-text">上班打卡</span>
+            <span class="clock-btn-sub" id="clockin-time"></span>
+          </button>
+          <button class="clock-btn clock-out" id="btn-clockout" disabled>
+            <span class="clock-btn-icon">■</span>
+            <span class="clock-btn-text">下班打卡</span>
+            <span class="clock-btn-sub" id="clockout-time"></span>
+          </button>
+        </div>
 
-        <div class="work-duration" id="work-duration">
+        <div class="work-duration">
           <div class="duration-value" id="duration-value">00:00:00</div>
           <div class="duration-label">今日已工作</div>
         </div>

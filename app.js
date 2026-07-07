@@ -15,6 +15,7 @@ const statToday = document.getElementById('stat-today');
 const statWeek = document.getElementById('stat-week');
 const statMonth = document.getElementById('stat-month');
 const historyList = document.getElementById('history-list');
+const btnReset = document.getElementById('btn-reset');
 const tabs = document.querySelectorAll('.tab');
 const pages = document.querySelectorAll('.page');
 
@@ -34,6 +35,7 @@ function init() {
 function setupEventListeners() {
   btnClockin.addEventListener('click', handleClockIn);
   btnClockout.addEventListener('click', handleClockOut);
+  btnReset.addEventListener('click', handleReset);
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -147,6 +149,17 @@ function handleClockOut() {
   const latestOut = getLatestClockOut();
   todayRecord.duration = calcDuration(todayRecord.clockIn, latestOut);
 
+  saveRecords();
+  updateUI();
+}
+
+function handleReset() {
+  if (!confirm('确定要重置今日打卡记录吗？')) return;
+
+  const today = getDateStr(new Date());
+  records = records.filter(r => r.date !== today);
+  todayRecord = null;
+  stopTimer();
   saveRecords();
   updateUI();
 }

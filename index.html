@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4CAF50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>工时记录</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 打卡页面 -->
+    <div id="page-clock" class="page active">
+      <header class="header">
+        <div class="date" id="current-date"></div>
+        <div class="time" id="current-time"></div>
+      </header>
+
+      <main class="main">
+        <div class="status-card">
+          <div class="status-label" id="status-label">未打卡</div>
+          <div class="status-time" id="status-time"></div>
+        </div>
+
+        <button class="clock-btn" id="clock-btn">
+          <span class="clock-btn-text" id="clock-btn-text">上班打卡</span>
+          <span class="clock-btn-sub" id="clock-btn-sub"></span>
+        </button>
+
+        <div class="work-duration" id="work-duration">
+          <div class="duration-value" id="duration-value">00:00:00</div>
+          <div class="duration-label">今日已工作</div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 统计页面 -->
+    <div id="page-stats" class="page">
+      <header class="header">
+        <div class="title">工时统计</div>
+      </header>
+
+      <main class="main">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-today">0h</div>
+            <div class="stat-label">今日</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-week">0h</div>
+            <div class="stat-label">本周</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-month">0h</div>
+            <div class="stat-label">本月</div>
+          </div>
+        </div>
+
+        <div class="history-section">
+          <div class="history-title">打卡记录</div>
+          <div class="history-list" id="history-list"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="tab-bar">
+      <button class="tab active" data-page="clock">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm.5 11H7V10h5.5v3zm3.5-5H10V8h6v0z"/></svg>
+        <span>打卡</span>
+      </button>
+      <button class="tab" data-page="stats">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>
+        <span>统计</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

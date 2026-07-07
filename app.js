@@ -4,6 +4,7 @@ const STORAGE_KEY = 'work-records';
 // ============ DOM 元素 ============
 const currentDate = document.getElementById('current-date');
 const currentTime = document.getElementById('current-time');
+const greeting = document.getElementById('greeting');
 const statusLabel = document.getElementById('status-label');
 const statusTime = document.getElementById('status-time');
 const btnClockin = document.getElementById('btn-clockin');
@@ -55,6 +56,20 @@ function updateDateTime() {
   const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   currentDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weekDays[now.getDay()]}`;
   currentTime.textContent = formatTime(now);
+  updateGreeting();
+}
+
+function updateGreeting() {
+  const hour = new Date().getHours();
+  let text = '';
+  if (hour < 6) text = '夜深了，注意休息';
+  else if (hour < 9) text = '早安，新的一天开始了';
+  else if (hour < 12) text = '上午好，工作顺利';
+  else if (hour < 14) text = '中午好，记得午休';
+  else if (hour < 18) text = '下午好，继续加油';
+  else if (hour < 22) text = '晚上好，辛苦了';
+  else text = '夜深了，早点休息';
+  greeting.textContent = text;
 }
 
 function formatTime(date) {

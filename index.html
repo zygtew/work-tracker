@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#4CAF50">
+  <meta name="theme-color" content="#0f0f23">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>工时记录</title>
@@ -17,14 +17,15 @@
     <!-- 打卡页面 -->
     <div id="page-clock" class="page active">
       <header class="header">
+        <div class="greeting" id="greeting"></div>
         <div class="date" id="current-date"></div>
         <div class="time" id="current-time"></div>
       </header>
 
       <main class="main">
         <div class="status-card">
-          <div class="status-label" id="status-label">未打卡</div>
-          <div class="status-time" id="status-time"></div>
+          <div class="status-label" id="status-label">准备开始新的一天</div>
+          <div class="status-time" id="status-time">点击上班打卡开始计时</div>
         </div>
 
         <div class="clock-buttons">

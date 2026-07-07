@@ -189,6 +189,25 @@ body {
   margin-top: 4px;
 }
 
+.reset-btn {
+  display: block;
+  margin: 20px auto 0;
+  padding: 8px 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:active {
+  background: #ff5252;
+  color: white;
+  border-color: #ff5252;
+}
+
 /* Stats Page */
 .stats-grid {
   display: grid;
